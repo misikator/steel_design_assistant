@@ -1,0 +1,36 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap");
+
+body {
+    background-color: darkslategrey;
+    font-family: 'Roboto', sans-serif;
+    text-align: left;  /* Align everything to the left */
+}
+
+
+
+a {
+    text-decoration: none;
+    color: white !important;
+    font-weight: 100;
+    text-align: left;
+}
+
+a:hover {
+    color: #cdcfd1 !important;
+    text-decoration: none;
+}
+
+ul {
+    list-style-type: none;
+}
+
+hr {
+    margin-top: 0px;
+    margin-bottom: 5%;
+    text-align: left;
+}
+
+
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+header {visibility: hidden;}
