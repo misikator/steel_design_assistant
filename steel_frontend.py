@@ -1,6 +1,10 @@
 from pathlib import Path
 import pandas as pd
 import streamlit as st
+import sys
+import os
+
+sys.path.append(os.path.dirname(__file__))
 import steel_backend
 import plotly.graph_objects as go
 from bokeh.plotting import figure
