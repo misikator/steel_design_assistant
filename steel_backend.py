@@ -81,7 +81,7 @@ def get_helping_factor(alpha, lambda_slender):
     return phi
 
 def get_reduction_factor(phi, lambda_slender):
-    chi = max(1/(phi + math.sqrt(phi**2 - lambda_slender**2)),1)
+    chi = min(1/(phi + math.sqrt(phi**2 - lambda_slender**2)),1)
     return chi
 
 def get_buckling_resistance(chi, area, fy):
