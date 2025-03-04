@@ -44,7 +44,7 @@ chosen_language = st.sidebar.selectbox(label = "Choose a language", options = st
 tab1, tab2, tab3, tab4 = st.tabs([str(steel_backend.set_language()[chosen_language][0]), "B", "C", "D"])
 
 with tab1:
-    col1, col2, col3 = st.columns(3,gap = "medium")
+    col1, col2, col3, col4 = st.columns(4,gap = "medium")
     with col1:
 
         with st.container(border=2):
@@ -52,22 +52,39 @@ with tab1:
                                                           options = steel_backend.steel_grade_list)
             chosen_fy = steel_backend.steel_grade_dict[chosen_steel_grade][0]
 
-            chosen_section = st.selectbox(label = str(steel_backend.set_language()[chosen_language][2]),options = steel_backend.L_equal_name)
+            chosen_section_family = st.selectbox(label = str(steel_backend.set_language()[chosen_language][7]), options = steel_backend.section_family_list)
+
+            if chosen_section_family == "L equal":
+                chosen_section_list = steel_backend.L_equal_name
+            elif chosen_section_family == "HEA":
+                chosen_section_list = steel_backend.HEA_name
+
+            chosen_section = st.selectbox(label = str(steel_backend.set_language()[chosen_language][2]),
+                                          options = chosen_section_list)
             chosen_element_length = st.number_input(label = str(steel_backend.set_language()[chosen_language][3]),
                                                     min_value = 0, step = 1, value = 1000)
     with col2:
-        st.image(image = steel_backend.L_equal_image, use_container_width=True)
+        if chosen_section_family == "L equal":
+            st.image(image = steel_backend.L_equal_image, use_container_width=True)
+        elif chosen_section_family == "HEA":
+            st.image(image=steel_backend.HEA_image, use_container_width=True)
 
     with st.container(border=2):
         col1, col2, col3, col4, col5 = st.columns(5, gap = "small")
         with col1:
             st.latex(str(steel_backend.set_language()[chosen_language][4]))
             st.latex(str(steel_backend.set_language()[chosen_language][5]))
-            st.latex(str(steel_backend.set_language()[chosen_language][6]))
+            if chosen_language == "HUN":
+                st.latex(r""" gerinclemez \thickspace vastagság \thickspace =""")
+            else:
+                st.latex(r""" web \thickspace thickness \thickspace =""")
+            if chosen_language == "HUN":
+                st.latex(r""" övlemez \thickspace vastagság \thickspace =""")
+            else: st.latex(r""" flange \thickspace thickness \thickspace =""")
             if chosen_language == "HUN":
                 st.latex(r""" keresztmetszeti \thickspace terület \thickspace =""")
             else: st.latex(r""" section \thickspace area \thickspace =""")
-            st.latex(str(steel_backend.set_language()[chosen_language][8]))
+            # st.latex(str(steel_backend.set_language()[chosen_language][8]))
             if chosen_language == "HUN":
                 st.latex(r""" inercia \thickspace er\H{o}s \thickspace tengely \thickspace körül \thickspace""")
             else:
@@ -77,31 +94,67 @@ with tab1:
             else:
                 st.latex(r""" inertia \thickspace around \thickspace the \thickspace gyenge \thickspace axis""")
             if chosen_language == "HUN":
-                st.latex(r""" kihajlási \thickspace görbe \thickspace """)
+                st.latex(r""" kihajlási \thickspace görbe \thickspace er\H{o}s \thickspace tengely \thickspace körül""")
             else:
-                st.latex(r""" buckling \thickspace curve \thickspace """)
+                st.latex(r""" buckling \thickspace curve \thickspace around \thickspace strong \thickspace axis""")
+            if chosen_language == "HUN":
+                st.latex(r""" kihajlási \thickspace görbe \thickspace gyenge \thickspace tengely \thickspace körül""")
+            else:
+                st.latex(r""" buckling \thickspace curve \thickspace around \thickspace weak \thickspace axis""")
+
         with col2:
             st.latex(r"""\thickspace b \thickspace =""")
             st.latex(r"""\thickspace h \thickspace =""")
-            st.latex(r"""\thickspace t \thickspace =""")
+            st.latex(r"""\thickspace t_{w} \thickspace =""")
+            st.latex(r"""\thickspace t_{f} \thickspace =""")
             st.latex(r"""\thickspace A \thickspace =""")
-            st.latex(r"""\thickspace I_y \thickspace =""")
+            # st.latex(r"""\thickspace I_y \thickspace =""")
             st.latex(r"""\thickspace I_u \thickspace =""")
             st.latex(r"""\thickspace I_v \thickspace =""")
             st.latex(r"""\thickspace""")
         with col3:
-            chosen_h = steel_backend.L_equal_h[steel_backend.L_equal_name.index(chosen_section)]
+
+            chosen_h = steel_backend.get_h(chosen_section_family = chosen_section_family, chosen_section = chosen_section)
             st.latex(str(chosen_h) + r"""\thickspace mm""")
-            chosen_b = steel_backend.L_equal_h[steel_backend.L_equal_name.index(chosen_section)]
+
+            chosen_b = steel_backend.get_b(chosen_section_family = chosen_section_family, chosen_section = chosen_section)
+
             st.latex(str(chosen_b) + r"""\thickspace mm""")
-            st.latex(str(steel_backend.L_equal_t[steel_backend.L_equal_name.index(chosen_section)]) + r"""\thickspace mm""")
-            chosen_area = steel_backend.L_equal_area[steel_backend.L_equal_name.index(chosen_section)]
+
+            chosen_tw = steel_backend.get_tw(chosen_section_family=chosen_section_family, chosen_section=chosen_section)
+
+            st.latex(str(chosen_tw) + r"""\thickspace mm""")
+
+            chosen_tf = steel_backend.get_tf(chosen_section_family=chosen_section_family, chosen_section=chosen_section)
+
+            st.latex(str(chosen_tf) + r"""\thickspace mm""")
+
+            chosen_area = steel_backend.get_area(chosen_section_family=chosen_section_family, chosen_section=chosen_section)
+
             st.latex(str(chosen_area) + r"""\thickspace mm^2""")
-            st.latex(str(steel_backend.L_equal_inertia[steel_backend.L_equal_name.index(chosen_section)]) + r"""\thickspace cm^4""")
-            st.latex(str(steel_backend.L_equal_inertia_strong[steel_backend.L_equal_name.index(chosen_section)]) + r"""\thickspace cm^4""")
-            st.latex(str(steel_backend.L_equal_inertia_weak[steel_backend.L_equal_name.index(chosen_section)]) + r"""\thickspace cm^4""")
-            chosen_buckling_curve = steel_backend.L_equal_curve[steel_backend.L_equal_name.index(chosen_section)]
-            st.latex(str(chosen_buckling_curve))
+
+            # st.latex(str(steel_backend.L_equal_inertia[steel_backend.L_equal_name.index(chosen_section)]) + r"""\thickspace cm^4""")
+
+            chosen_inertia_strong = steel_backend.get_inertia_strong(chosen_section_family=chosen_section_family, chosen_section=chosen_section)
+
+            st.latex(str(chosen_inertia_strong) + r"""\thickspace cm^4""")
+
+            chosen_inertia_weak = steel_backend.get_inertia_weak(chosen_section_family=chosen_section_family,
+                                                                     chosen_section=chosen_section)
+
+            st.latex(str(chosen_inertia_weak) + r"""\thickspace cm^4""")
+
+            chosen_buckling_curve_strong = steel_backend.get_buckling_curve_strong(chosen_section_family=chosen_section_family,
+                                                                     chosen_section=chosen_section)
+
+
+            st.latex(str(chosen_buckling_curve_strong))
+
+            chosen_buckling_curve_weak = steel_backend.get_buckling_curve_weak(
+                chosen_section_family=chosen_section_family,
+                chosen_section=chosen_section)
+
+            st.latex(str(chosen_buckling_curve_weak))
 
     with st.container(border=2):
         col1, col2, col3, col4, col5 = st.columns(5, gap = "small")
@@ -116,6 +169,7 @@ with tab1:
                 st.latex(r""" befogási \thickspace tényez\H{o}""")
             else:
                 st.latex(r""" buckling \thickspace coefficient \thickspace """)
+
 
         with col2:
             st.write("")
@@ -127,77 +181,297 @@ with tab1:
             ky = st.number_input(label="ky", min_value=0.0, max_value=3.0, value=1.0, step = 0.1)
             kz = st.number_input(label="kz", min_value=0.0, max_value=3.0, value=1.0, step = 0.1)
 
-    with st.container(border=2):
         col1, col2, col3, col4, col5 = st.columns(5, gap="small")
         with col1:
             if chosen_language == "HUN":
-                st.latex(r""" kiritkus \thickspace normáler\H{o}""")
+                st.latex(r""" kihajlási \thickspace hossz""")
             else:
-                st.latex(r""" critical \thickspace normal \thickspace force \thickspace """)
+                st.latex(r""" buckling \thickspace length \thickspace """)
+            if chosen_language == "HUN":
+                st.latex(r""" kihajlási \thickspace hossz""")
+            else:
+                st.latex(r""" buckling \thickspace length \thickspace """)
+        with col2:
+            st.latex(r"""\thickspace L_0,y \thickspace =""")
+            st.latex(r"""\thickspace L_0,z \thickspace =""")
+        with col3:
+            L0y = ky * chosen_element_length
+            L0z = kz * chosen_element_length
+            st.latex(str(round(L0y,2)) + r"""\thickspace mm""")
+            st.latex(str(round(L0z,2)) + r"""\thickspace mm""")
+
+    with st.container(border=2):
+        col1, col2, col3, col4, col5 = st.columns(5, gap="small")
+        with col1:
+            st.write("")
             if chosen_language == "HUN":
                 st.latex(r""" kiritkus \thickspace normáler\H{o}""")
             else:
                 st.latex(r""" critical \thickspace normal \thickspace force \thickspace """)
-            if chosen_language == "HUN":
-                st.latex(r""" kiritkus \thickspace normáler\H{o}""")
-            else:
-                st.latex(r""" critical \thickspace normal \thickspace force \thickspace """)
+
+        with col2:
+            st.write("")
+            st.latex(r"""N_{cr, v} \thickspace =""")
+
+        with col3:
+            st.latex(r""" \frac{\pi^2 \thinspace \sdot \thinspace E \thinspace \sdot \thinspace I_{v}}{ L_{0}^2} \thinspace =""")
+        with col4:
+            st.write("")
+            Ncr_v = steel_backend.get_Ncr(E = 210000, I = chosen_inertia_weak * 10000,
+                                      L = chosen_element_length * ky)
+            st.latex(str(round(Ncr_v/1000,2)) + r"""\thickspace kN""")
+
+        col1, col2, col3, col4, col5 = st.columns(5, gap="small")
+        with col1:
+            st.write("")
             if chosen_language == "HUN":
                 st.latex(r""" karcs\'{u}s\'{a}g""")
             else:
                 st.latex(r""" slenderness """)
+            st.write("")
+            st.write("")
+            st.write("")
             if chosen_language == "HUN":
                 st.latex(r""" alakhiba \thickspace tényez\H{o}""")
             else:
                 st.latex(r""" imperfection \thickspace factor """)
+
+        with col2:
+            st.write("")
+            st.latex(r"""\bar{\lambda} \thickspace =""")
+            st.write("")
+            st.write("")
+            st.write("")
+            st.latex(r"""\alpha \thickspace =""")
+
+        with col3:
+
+            st.latex(
+                r""" \sqrt{\frac{ A \thinspace \sdot \thinspace f_{y}}{N_{cr,v}}} \thinspace = """)
+        with col4:
+            lambda_slender = steel_backend.get_lambda(A=chosen_area * 100, fy=chosen_fy, Ncr=Ncr_v)
+            st.write("")
+            st.latex(str(round(lambda_slender, 3)))
+            st.write("")
+            st.write("")
+            st.write("")
+            imperfection_factor = steel_backend.get_imperfection_factor(buckling_curve=chosen_buckling_curve_weak )
+            st.latex(str(imperfection_factor))
+        col1, col2, col3, col4, col5 = st.columns(5, gap="small")
+        with col1:
+            st.write("")
+
             if chosen_language == "HUN":
                 st.latex(r""" segéd \thickspace mennyiség""")
             else:
                 st.latex(r""" support \thickspace value """)
+
+        with col2:
+            st.write("")
+
+            st.latex(r"""\Phi \thickspace =""")
+
+        with col3:
+            st.latex(r"""\frac{1 \thinspace + \thinspace \alpha \thinspace \sdot \Big( 
+            \bar{\lambda} \thinspace - \thinspace 0,2 \Big) \thinspace + \thinspace 
+            \bar{\lambda}^2 }{2} \thickspace = """)
+        with col4:
+            st.write("")
+            st.write("")
+            helper_phi = steel_backend.get_helping_factor(alpha=imperfection_factor, lambda_slender=lambda_slender)
+            st.latex(str(round(helper_phi, 3)))
+
+        col1, col2, col3, col4, col5 = st.columns(5, gap="small")
+        with col1:
+            st.write("")
             if chosen_language == "HUN":
                 st.latex(r""" kihajlás \thickspace csökkent\H{o} \thickspace tényez\H{o}""")
             else:
                 st.latex(r""" reduction \thickspace factor """)
+
+        with col2:
+            st.write("")
+            st.latex(r"""\chi \thickspace =""")
+
+        with col3:
+            st.latex(
+                r"""\frac{1}{\phi \thinspace + \thinspace \sqrt{\phi^2 \thinspace - \thinspace \bar{\lambda}^2}}\thickspace =""")
+
+        with col4:
+            st.write("")
+            reduction_factor_chi = steel_backend.get_reduction_factor(phi=helper_phi, lambda_slender=lambda_slender)
+            st.latex(str(round(reduction_factor_chi, 3)))
+
+        col1, col2, col3, col4, col5 = st.columns(5, gap="small")
+        with col1:
+            st.write("")
             if chosen_language == "HUN":
                 st.latex(r""" kihajlási \thickspace ellenállás""")
             else:
                 st.latex(r""" buckling \thickspace resistance """)
         with col2:
-            st.latex(r"""N_{cr, v} \thickspace =""")
-            st.latex(r"""N_{cr, u} \thickspace =""")
-            st.latex(r"""N_{cr} \thickspace =""")
-            st.latex(r"""\bar{\lambda} \thickspace =""")
-            st.latex(r"""\alpha \thickspace =""")
-            st.latex(r"""\Phi \thickspace =""")
-            st.latex(r"""\chi \thickspace =""")
-            st.latex(r"""N_{br, d} \thickspace =""")
+            st.write("")
+            st.latex(r"""N_{br, v, d} \thickspace =""")
         with col3:
+            st.latex(
+                r"""\frac{\chi \thinspace \sdot \thinspace A \thinspace \sdot f_{y} }{\gamma_{M1} }\thickspace =""")
+        with col4:
+            st.write("")
+            Nbrd_v = steel_backend.get_buckling_resistance(chi=reduction_factor_chi, area=chosen_area * 100,
+                                                         fy=chosen_fy)
+            st.latex(str(round(Nbrd_v / 1000, 2)) + r"""\thickspace kN""")
 
-            Ncr_v = steel_backend.get_Ncr(E = 210000, I = steel_backend.L_equal_inertia_weak[steel_backend.L_equal_name.index(chosen_section)] * 10000,
-                                      L = chosen_element_length * ky)
-            st.latex(str(round(Ncr_v/1000,2)) + r"""\thickspace kN""")
-            Ncr_u = steel_backend.get_Ncr(E=210000, I=steel_backend.L_equal_inertia_strong[
-                                                          steel_backend.L_equal_name.index(chosen_section)] * 10000,
+        st.write("---")
+
+
+
+
+
+
+        col1, col2, col3, col4, col5 = st.columns(5, gap="small")
+        with col1:
+            st.write("")
+            if chosen_language == "HUN":
+                st.latex(r""" kiritkus \thickspace normáler\H{o}""")
+            else:
+                st.latex(r""" critical \thickspace normal \thickspace force \thickspace """)
+
+        with col2:
+            st.write("")
+            st.latex(r"""N_{cr, u} \thickspace =""")
+
+        with col3:
+            st.latex(
+                r""" \frac{\pi^2 \thinspace \sdot \thinspace E \thinspace \sdot \thinspace I_{u}}{ L_{0}^2} \thinspace =""")
+        with col4:
+            st.write("")
+            Ncr_u = steel_backend.get_Ncr(E=210000, I=chosen_inertia_strong * 10000,
                                           L=chosen_element_length * kz)
             st.latex(str(round(Ncr_u / 1000, 2)) + r"""\thickspace kN""")
-            Ncr = min(Ncr_v, Ncr_u)
-            st.latex(str(round(Ncr / 1000, 2)) + r"""\thickspace kN""")
 
-            lambda_slender = steel_backend.get_lambda(A =chosen_area*100, fy = chosen_fy, Ncr = Ncr )
-            st.latex(str(round(lambda_slender,3)))
-            imperfection_factor = steel_backend.get_imperfection_factor(buckling_curve = chosen_buckling_curve)
+        col1, col2, col3, col4, col5 = st.columns(5, gap="small")
+        with col1:
+            st.write("")
+            if chosen_language == "HUN":
+                st.latex(r""" karcs\'{u}s\'{a}g""")
+            else:
+                st.latex(r""" slenderness """)
+            st.write("")
+            st.write("")
+            st.write("")
+            if chosen_language == "HUN":
+                st.latex(r""" alakhiba \thickspace tényez\H{o}""")
+            else:
+                st.latex(r""" imperfection \thickspace factor """)
+
+        with col2:
+            st.write("")
+            st.latex(r"""\bar{\lambda} \thickspace =""")
+            st.write("")
+            st.write("")
+            st.write("")
+            st.latex(r"""\alpha \thickspace =""")
+
+        with col3:
+
+            st.latex(
+                r""" \sqrt{\frac{ A \thinspace \sdot \thinspace f_{y}}{N_{cr,u}}} \thinspace = """)
+        with col4:
+            lambda_slender = steel_backend.get_lambda(A=chosen_area * 100, fy=chosen_fy, Ncr=Ncr_u)
+            st.write("")
+            st.latex(str(round(lambda_slender, 3)))
+            st.write("")
+            st.write("")
+            st.write("")
+            imperfection_factor = steel_backend.get_imperfection_factor(buckling_curve=chosen_buckling_curve_strong)
             st.latex(str(imperfection_factor))
-            helper_phi = steel_backend.get_helping_factor(alpha = imperfection_factor, lambda_slender = lambda_slender)
-            st.latex(str(round(helper_phi,3)))
-            reduction_factor_chi = steel_backend.get_reduction_factor(phi = helper_phi, lambda_slender = lambda_slender)
-            st.latex(str(round(reduction_factor_chi,3)))
-            Nbrd = steel_backend.get_buckling_resistance(chi = reduction_factor_chi, area = chosen_area*100, fy = chosen_fy)
-            st.latex(str(round(Nbrd / 1000, 2)) + r"""\thickspace kN""")
+        col1, col2, col3, col4, col5 = st.columns(5, gap="small")
+        with col1:
+            st.write("")
 
+            if chosen_language == "HUN":
+                st.latex(r""" segéd \thickspace mennyiség""")
+            else:
+                st.latex(r""" support \thickspace value """)
 
+        with col2:
+            st.write("")
 
+            st.latex(r"""\Phi \thickspace =""")
 
+        with col3:
+            st.latex(r"""\frac{1 \thinspace + \thinspace \alpha \thinspace \sdot \Big( 
+                    \bar{\lambda} \thinspace - \thinspace 0,2 \Big) \thinspace + \thinspace 
+                    \bar{\lambda}^2 }{2} \thickspace = """)
+        with col4:
+            st.write("")
+            st.write("")
+            helper_phi = steel_backend.get_helping_factor(alpha=imperfection_factor, lambda_slender=lambda_slender)
+            st.latex(str(round(helper_phi, 3)))
 
+        col1, col2, col3, col4, col5 = st.columns(5, gap="small")
+        with col1:
+            st.write("")
+            if chosen_language == "HUN":
+                st.latex(r""" kihajlás \thickspace csökkent\H{o} \thickspace tényez\H{o}""")
+            else:
+                st.latex(r""" reduction \thickspace factor """)
+
+        with col2:
+            st.write("")
+            st.latex(r"""\chi \thickspace =""")
+
+        with col3:
+            st.latex(
+                r"""\frac{1}{\phi \thinspace + \thinspace \sqrt{\phi^2 \thinspace - \thinspace \bar{\lambda}^2}}\thickspace =""")
+
+        with col4:
+            st.write("")
+            reduction_factor_chi = steel_backend.get_reduction_factor(phi=helper_phi, lambda_slender=lambda_slender)
+            st.latex(str(round(reduction_factor_chi, 3)))
+
+        col1, col2, col3, col4, col5 = st.columns(5, gap="small")
+        with col1:
+            st.write("")
+            if chosen_language == "HUN":
+                st.latex(r""" kihajlási \thickspace ellenállás""")
+            else:
+                st.latex(r""" buckling \thickspace resistance """)
+        with col2:
+            st.write("")
+            st.latex(r"""N_{br, v, d} \thickspace =""")
+        with col3:
+            st.latex(
+                r"""\frac{\chi \thinspace \sdot \thinspace A \thinspace \sdot f_{y} }{\gamma_{M1} }\thickspace =""")
+        with col4:
+            st.write("")
+            Nbrd_u = steel_backend.get_buckling_resistance(chi=reduction_factor_chi, area=chosen_area * 100,
+                                                           fy=chosen_fy)
+            st.latex(str(round(Nbrd_u / 1000, 2)) + r"""\thickspace kN""")
+
+        st.write("---")
+
+        col1, col2, col3, col4, col5 = st.columns(5, gap="small")
+        with col1:
+            st.write("")
+            if chosen_language == "HUN":
+                st.latex(r""" kihajlási \thickspace ellenállás""")
+            else:
+                st.latex(r""" buckling \thickspace resistance """)
+
+        with col2:
+            st.write("")
+            st.latex(r"""N_{br,d} \thickspace =""")
+
+        with col3:
+            st.write("")
+            st.latex(
+                r""" min \thinspace ( \thinspace N_{br, v,d} \thinspace ; \thinspace N_{br, u, d} \thinspace )\thinspace =""")
+
+        with col4:
+            st.write("")
+            Ncr = min(Nbrd_v, Nbrd_u)
+            st.latex(str(round(Ncr / 1000, 2)) + r"""\thickspace kN""")
 
 # # Streamlit app
 # chosen_language = st.radio(label="", options=beam_backend.language_list)

@@ -1,5 +1,4 @@
-
-#from bokeh.plotting import figure
+from bokeh.plotting import figure
 import math
 import sys
 import os
@@ -10,44 +9,78 @@ from PIL import Image
 
 language_dict = {"HUN":["Kihajlás", "Válasszon anyagminőséget!", "Válasszon keresztmetszetet!",
                         "Adja meg az elem hosszát! [mm]", "szélesség","magasság", "vastagság",
-                        "keresztmetszeti terület", "inercia", "inercia erős tengely körül",
+                        "Adja meg a szelvénycsaládot!", "inercia", "inercia erős tengely körül",
                         "inercia gyenge tengely körül", "anyagjellemzők", "geometria",
                         "igénybevételek", "számítás", "Beton anyagminősége",
                         "nyomószilárdság", "karakterisztikus", "értéke"],
-                 "ENG": ["Buckling", "Choose a steel grade!", "Chosen section!",
+                 "ENG": ["Buckling", "Choose a steel grade!", "Choose a section!",
                          "Set the length of the element! [mm]", "width", "height", "thickness",
-                         "section area", "inertia", "inertia around the strong axis",
+                         "Choose a section family!", "inertia", "inertia around the strong axis",
                          "inertia around the weak axis", "materials", "geometry", "internal forces",
                          "calculation", "Concrete material",
                          "compressive strength", "characteristic", "value"]}
+
 language_list = list(language_dict.keys())
 
 chosen_language = language_list[0]
+
+section_family_list = ["HEA", "L equal"]
 
 steel_gamma = [1,1,1.25,1.25,1.1]
 
 def set_language():
     return language_dict
 
-df = pd.read_excel("section_table.xlsx", engine="openpyxl")
+df_L_equal = pd.read_excel("section_table_L_equal.xlsx", engine="openpyxl")
 
-L_equal_name = df.iloc[:, 0].tolist()
-L_equal_h = df.iloc[:, 1].tolist()
-L_equal_t = df.iloc[:, 2].tolist()
-L_equal_r1 = df.iloc[:, 3].tolist()
-L_equal_r2 = df.iloc[:, 4].tolist()
-L_equal_r3 = df.iloc[:, 5].tolist()
-L_equal_r4 = df.iloc[:, 6].tolist()
-L_equal_area = df.iloc[:, 7].tolist()
-L_equal_inertia = df.iloc[:, 10].tolist()
-L_equal_inertia_strong = df.iloc[:, 12].tolist()
-L_equal_inertia_weak = df.iloc[:, 13].tolist()
-L_equal_curve = df.iloc[:, -1].tolist()
+L_equal_name = df_L_equal.iloc[:, 0].tolist()
+L_equal_h = df_L_equal.iloc[:, 1].tolist()
+L_equal_t = df_L_equal.iloc[:, 2].tolist()
+L_equal_r1 = df_L_equal.iloc[:, 3].tolist()
+L_equal_r2 = df_L_equal.iloc[:, 4].tolist()
+L_equal_r3 = df_L_equal.iloc[:, 5].tolist()
+L_equal_r4 = df_L_equal.iloc[:, 6].tolist()
+L_equal_area = df_L_equal.iloc[:, 7].tolist()
+L_equal_inertia = df_L_equal.iloc[:, 10].tolist()
+L_equal_inertia_strong = df_L_equal.iloc[:, 12].tolist()
+L_equal_inertia_weak = df_L_equal.iloc[:, 13].tolist()
+L_equal_curve = df_L_equal.iloc[:, -1].tolist()
+
+df_HEA = pd.read_excel("section_table_HEA.xlsx", engine="openpyxl")
+
+HEA_name = df_HEA.iloc[:, 0].tolist()
+HEA_h = df_HEA.iloc[:, 1].tolist()
+HEA_b = df_HEA.iloc[:, 2].tolist()
+HEA_tw = df_HEA.iloc[:, 3].tolist()
+HEA_tf = df_HEA.iloc[:, 4].tolist()
+HEA_area = df_HEA.iloc[:, 9].tolist()
+HEA_inertia_strong = df_HEA.iloc[:, 10].tolist()
+HEA_inertia_weak = df_HEA.iloc[:, 11].tolist()
+
+HEA_curve_strong = []
+for idx, element in enumerate(HEA_name):
+    if HEA_h[idx] / HEA_b[idx] > 1.2:
+        if HEA_tf[idx] <= 40: HEA_curve_strong.append("a")
+        else: HEA_curve_strong.append("b")
+    else:
+        if HEA_tf[idx] <= 100: HEA_curve_strong.append("b")
+        else: HEA_curve_strong.append("d")
+
+HEA_curve_weak = []
+for id, element in enumerate(HEA_name):
+    if HEA_h[id] / HEA_b[id] > 1.2:
+        if HEA_tf[id] <= 40: HEA_curve_weak.append("b")
+        else: HEA_curve_weak.append("c")
+    else:
+        if HEA_tf[id] <= 100: HEA_curve_weak.append("c")
+        else: HEA_curve_weak.append("d")
 
 current_dir = Path(__file__).parent if "__file__" in locals() else Path.cwd()
 
 L_equal_image_path = current_dir / "pics" / "L_equal.png"
+HEA_image_path = current_dir / "pics" / "HEA.png"
 L_equal_image = Image.open(L_equal_image_path)
+HEA_image = Image.open(HEA_image_path)
 
 steel_grade_dict = {"S235": [235, 360, 7850, 210000, 81000, 0,3, 0.000012],
               "S275": [275, 430, 7850, 210000, 81000, 0,3, 0.000012],
@@ -55,6 +88,83 @@ steel_grade_dict = {"S235": [235, 360, 7850, 210000, 81000, 0,3, 0.000012],
               "S450": [440, 550, 7850, 210000, 81000, 0,3, 0.000012]}
 
 steel_grade_list = list(steel_grade_dict.keys())
+
+def get_h(chosen_section_family, chosen_section):
+    if chosen_section_family == "L equal":
+        index = L_equal_name.index(chosen_section)
+        return L_equal_h[index]
+
+    elif chosen_section_family == "HEA":
+        index = HEA_name.index(chosen_section)
+        return HEA_h[index]
+
+def get_b(chosen_section_family, chosen_section):
+    if chosen_section_family == "L equal":
+        index = L_equal_name.index(chosen_section)
+        return L_equal_h[index]
+
+    elif chosen_section_family == "HEA":
+        index = HEA_name.index(chosen_section)
+        return HEA_b[index]
+
+def get_tw(chosen_section_family, chosen_section):
+    if chosen_section_family == "L equal":
+        index = L_equal_name.index(chosen_section)
+        return L_equal_t[index]
+
+    elif chosen_section_family == "HEA":
+        index = HEA_name.index(chosen_section)
+        return HEA_tw[index]
+
+def get_tf(chosen_section_family, chosen_section):
+    if chosen_section_family == "L equal":
+        index = L_equal_name.index(chosen_section)
+        return L_equal_t[index]
+
+    elif chosen_section_family == "HEA":
+        index = HEA_name.index(chosen_section)
+        return HEA_tf[index]
+
+
+def get_area(chosen_section_family, chosen_section):
+    if chosen_section_family == "L equal":
+        index = L_equal_name.index(chosen_section)
+        return L_equal_area[index]
+    elif chosen_section_family == "HEA":
+        index = HEA_name.index(chosen_section)
+        return HEA_area[index]
+
+def get_inertia_strong(chosen_section_family, chosen_section):
+    if chosen_section_family == "L equal":
+        index = L_equal_name.index(chosen_section)
+        return L_equal_inertia_strong[index]
+    elif chosen_section_family == "HEA":
+        index = HEA_name.index(chosen_section)
+        return HEA_inertia_strong[index]
+
+def get_inertia_weak(chosen_section_family, chosen_section):
+    if chosen_section_family == "L equal":
+        index = L_equal_name.index(chosen_section)
+        return L_equal_inertia_weak[index]
+    elif chosen_section_family == "HEA":
+        index = HEA_name.index(chosen_section)
+        return HEA_inertia_weak[index]
+
+def get_buckling_curve_strong(chosen_section_family, chosen_section):
+    if chosen_section_family == "L equal":
+        index = L_equal_name.index(chosen_section)
+        return L_equal_curve[index]
+    elif chosen_section_family == "HEA":
+        index = HEA_name.index(chosen_section)
+        return HEA_curve_strong[index]
+
+def get_buckling_curve_weak(chosen_section_family, chosen_section):
+    if chosen_section_family == "L equal":
+        index = L_equal_name.index(chosen_section)
+        return L_equal_curve[index]
+    elif chosen_section_family == "HEA":
+        index = HEA_name.index(chosen_section)
+        return HEA_curve_weak[index]
 
 def get_Ncr (E, I, L):
     Ncr = ((math.pi**2)*E*I)/(L**2)
