@@ -137,8 +137,47 @@ HEB_dict = {"section name" : HEB_name,
             "section buckling curve weak": HEB_curve_weak,
             "section buckling curve strong": HEB_curve_strong}
 
+df_IPE = pd.read_excel("section_table_IPE.xlsx", engine="openpyxl")
 
-total_section_dict = {"L equal": L_equal_dict, "HEA": HEA_dict, "HEB": HEB_dict}
+IPE_name = df_IPE.iloc[:, 0].tolist()
+IPE_h = df_IPE.iloc[:, 1].tolist()
+IPE_b = df_IPE.iloc[:, 2].tolist()
+IPE_tw = df_IPE.iloc[:, 3].tolist()
+IPE_tf = df_IPE.iloc[:, 4].tolist()
+IPE_area = df_IPE.iloc[:, 9].tolist()
+IPE_inertia_strong = df_IPE.iloc[:, 10].tolist()
+IPE_inertia_weak = df_IPE.iloc[:, 11].tolist()
+
+IPE_curve_strong = []
+for idx, element in enumerate(IPE_name):
+    if IPE_h[idx] / IPE_b[idx] > 1.2:
+        if IPE_tf[idx] <= 40: IPE_curve_strong.append("a")
+        else: IPE_curve_strong.append("b")
+    else:
+        if IPE_tf[idx] <= 100: IPE_curve_strong.append("b")
+        else: IPE_curve_strong.append("d")
+
+IPE_curve_weak = []
+for id, element in enumerate(IPE_name):
+    if IPE_h[id] / IPE_b[id] > 1.2:
+        if IPE_tf[id] <= 40: IPE_curve_weak.append("b")
+        else: IPEcurve_weak.append("c")
+    else:
+        if IPE_tf[id] <= 100: IPE_curve_weak.append("c")
+        else: IPE_curve_weak.append("d")
+
+IPE_dict = {"section name" : IPE_name,
+            "section height" : IPE_h,
+            "section width" : IPE_b,
+            "section web" : IPE_tw,
+            "section flange" : IPE_tf,
+            "section area" : IPE_area,
+            "section inertia weak" : IPE_inertia_weak,
+            "section inertia strong" : IPE_inertia_strong,
+            "section buckling curve weak": IPE_curve_weak,
+            "section buckling curve strong": IPE_curve_strong}
+
+total_section_dict = {"L equal": L_equal_dict, "HEA": HEA_dict, "HEB": HEB_dict, "IPE": IPE_dict}
 
 
 
@@ -149,9 +188,11 @@ current_dir = Path(__file__).parent if "__file__" in locals() else Path.cwd()
 L_equal_image_path = current_dir / "pics" / "L_equal.png"
 HEA_image_path = current_dir / "pics" / "HEA.png"
 HEB_image_path = current_dir / "pics" / "HEB.png"
+IPE_image_path = current_dir / "pics" / "IPE.png"
 L_equal_image = Image.open(L_equal_image_path)
 HEA_image = Image.open(HEA_image_path)
 HEB_image = Image.open(HEB_image_path)
+IPE_image = Image.open(IPE_image_path)
 
 steel_grade_dict = {"S235": [235, 360, 7850, 210000, 81000, 0,3, 0.000012],
               "S275": [275, 430, 7850, 210000, 81000, 0,3, 0.000012],
@@ -193,7 +234,7 @@ def get_buckling_curve_strong(chosen_section_family, chosen_section):
         total_section_dict[chosen_section_family]["section name"].index(chosen_section)]
 
 def get_buckling_curve_weak(chosen_section_family, chosen_section):
-    return total_section_dict[chosen_section_family]["section buckling curve strong"][
+    return total_section_dict[chosen_section_family]["section buckling curve weak"][
         total_section_dict[chosen_section_family]["section name"].index(chosen_section)]
 
 def get_Ncr (E, I, L):
