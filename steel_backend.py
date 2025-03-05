@@ -46,6 +46,17 @@ L_equal_inertia_strong = df_L_equal.iloc[:, 12].tolist()
 L_equal_inertia_weak = df_L_equal.iloc[:, 13].tolist()
 L_equal_curve = df_L_equal.iloc[:, -1].tolist()
 
+L_equal_dict = {"section name" : L_equal_name,
+                "section height" : L_equal_h,
+                "section width" : L_equal_h,
+                "section web" : L_equal_t,
+                "section flange" : L_equal_t,
+                "section area" : L_equal_area,
+                "section inertia weak" : L_equal_inertia_weak,
+                "section inertia strong" : L_equal_inertia_strong,
+                "section buckling curve weak": L_equal_curve,
+                "section buckling curve strong": L_equal_curve}
+
 df_HEA = pd.read_excel("section_table_HEA.xlsx", engine="openpyxl")
 
 HEA_name = df_HEA.iloc[:, 0].tolist()
@@ -75,12 +86,72 @@ for id, element in enumerate(HEA_name):
         if HEA_tf[id] <= 100: HEA_curve_weak.append("c")
         else: HEA_curve_weak.append("d")
 
+HEA_dict = {"section name" : HEA_name,
+            "section height" : HEA_h,
+            "section width" : HEA_b,
+            "section web" : HEA_tw,
+            "section flange" : HEA_tf,
+            "section area" : HEA_area,
+            "section inertia weak" : HEA_inertia_weak,
+            "section inertia strong" : HEA_inertia_strong,
+            "section buckling curve weak": HEA_curve_weak,
+            "section buckling curve strong": HEA_curve_strong}
+
+df_HEB = pd.read_excel("section_table_HEB.xlsx", engine="openpyxl")
+
+HEB_name = df_HEB.iloc[:, 0].tolist()
+HEB_h = df_HEB.iloc[:, 1].tolist()
+HEB_b = df_HEB.iloc[:, 2].tolist()
+HEB_tw = df_HEB.iloc[:, 3].tolist()
+HEB_tf = df_HEB.iloc[:, 4].tolist()
+HEB_area = df_HEB.iloc[:, 9].tolist()
+HEB_inertia_strong = df_HEB.iloc[:, 10].tolist()
+HEB_inertia_weak = df_HEB.iloc[:, 11].tolist()
+
+HEB_curve_strong = []
+for idx, element in enumerate(HEA_name):
+    if HEB_h[idx] / HEB_b[idx] > 1.2:
+        if HEB_tf[idx] <= 40: HEB_curve_strong.append("a")
+        else: HEB_curve_strong.append("b")
+    else:
+        if HEB_tf[idx] <= 100: HEB_curve_strong.append("b")
+        else: HEB_curve_strong.append("d")
+
+HEB_curve_weak = []
+for id, element in enumerate(HEB_name):
+    if HEB_h[id] / HEB_b[id] > 1.2:
+        if HEB_tf[id] <= 40: HEB_curve_weak.append("b")
+        else: HEB_curve_weak.append("c")
+    else:
+        if HEB_tf[id] <= 100: HEB_curve_weak.append("c")
+        else: HEB_curve_weak.append("d")
+
+HEB_dict = {"section name" : HEB_name,
+            "section height" : HEB_h,
+            "section width" : HEB_b,
+            "section web" : HEB_tw,
+            "section flange" : HEB_tf,
+            "section area" : HEB_area,
+            "section inertia weak" : HEB_inertia_weak,
+            "section inertia strong" : HEB_inertia_strong,
+            "section buckling curve weak": HEB_curve_weak,
+            "section buckling curve strong": HEB_curve_strong}
+
+
+total_section_dict = {"L equal": L_equal_dict, "HEA": HEA_dict, "HEB": HEB_dict}
+
+
+
 current_dir = Path(__file__).parent if "__file__" in locals() else Path.cwd()
+
+
 
 L_equal_image_path = current_dir / "pics" / "L_equal.png"
 HEA_image_path = current_dir / "pics" / "HEA.png"
+HEB_image_path = current_dir / "pics" / "HEB.png"
 L_equal_image = Image.open(L_equal_image_path)
 HEA_image = Image.open(HEA_image_path)
+HEB_image = Image.open(HEB_image_path)
 
 steel_grade_dict = {"S235": [235, 360, 7850, 210000, 81000, 0,3, 0.000012],
               "S275": [275, 430, 7850, 210000, 81000, 0,3, 0.000012],
@@ -90,81 +161,40 @@ steel_grade_dict = {"S235": [235, 360, 7850, 210000, 81000, 0,3, 0.000012],
 steel_grade_list = list(steel_grade_dict.keys())
 
 def get_h(chosen_section_family, chosen_section):
-    if chosen_section_family == "L equal":
-        index = L_equal_name.index(chosen_section)
-        return L_equal_h[index]
-
-    elif chosen_section_family == "HEA":
-        index = HEA_name.index(chosen_section)
-        return HEA_h[index]
+    return total_section_dict[chosen_section_family]["section height"][
+        total_section_dict[chosen_section_family]["section name"].index(chosen_section)]
 
 def get_b(chosen_section_family, chosen_section):
-    if chosen_section_family == "L equal":
-        index = L_equal_name.index(chosen_section)
-        return L_equal_h[index]
-
-    elif chosen_section_family == "HEA":
-        index = HEA_name.index(chosen_section)
-        return HEA_b[index]
+    return total_section_dict[chosen_section_family]["section width"][
+        total_section_dict[chosen_section_family]["section name"].index(chosen_section)]
 
 def get_tw(chosen_section_family, chosen_section):
-    if chosen_section_family == "L equal":
-        index = L_equal_name.index(chosen_section)
-        return L_equal_t[index]
-
-    elif chosen_section_family == "HEA":
-        index = HEA_name.index(chosen_section)
-        return HEA_tw[index]
+    return total_section_dict[chosen_section_family]["section web"][
+        total_section_dict[chosen_section_family]["section name"].index(chosen_section)]
 
 def get_tf(chosen_section_family, chosen_section):
-    if chosen_section_family == "L equal":
-        index = L_equal_name.index(chosen_section)
-        return L_equal_t[index]
-
-    elif chosen_section_family == "HEA":
-        index = HEA_name.index(chosen_section)
-        return HEA_tf[index]
-
+    return total_section_dict[chosen_section_family]["section flange"][
+        total_section_dict[chosen_section_family]["section name"].index(chosen_section)]
 
 def get_area(chosen_section_family, chosen_section):
-    if chosen_section_family == "L equal":
-        index = L_equal_name.index(chosen_section)
-        return L_equal_area[index]
-    elif chosen_section_family == "HEA":
-        index = HEA_name.index(chosen_section)
-        return HEA_area[index]
+    return total_section_dict[chosen_section_family]["section area"][
+        total_section_dict[chosen_section_family]["section name"].index(chosen_section)]
 
 def get_inertia_strong(chosen_section_family, chosen_section):
-    if chosen_section_family == "L equal":
-        index = L_equal_name.index(chosen_section)
-        return L_equal_inertia_strong[index]
-    elif chosen_section_family == "HEA":
-        index = HEA_name.index(chosen_section)
-        return HEA_inertia_strong[index]
+    return total_section_dict[chosen_section_family]["section inertia strong"][
+        total_section_dict[chosen_section_family]["section name"].index(chosen_section)]
 
 def get_inertia_weak(chosen_section_family, chosen_section):
-    if chosen_section_family == "L equal":
-        index = L_equal_name.index(chosen_section)
-        return L_equal_inertia_weak[index]
-    elif chosen_section_family == "HEA":
-        index = HEA_name.index(chosen_section)
-        return HEA_inertia_weak[index]
+    return total_section_dict[chosen_section_family]["section inertia weak"][
+        total_section_dict[chosen_section_family]["section name"].index(chosen_section)]
 
 def get_buckling_curve_strong(chosen_section_family, chosen_section):
-    if chosen_section_family == "L equal":
-        index = L_equal_name.index(chosen_section)
-        return L_equal_curve[index]
-    elif chosen_section_family == "HEA":
-        index = HEA_name.index(chosen_section)
-        return HEA_curve_strong[index]
+    return total_section_dict[chosen_section_family]["section buckling curve strong"][
+        total_section_dict[chosen_section_family]["section name"].index(chosen_section)]
 
 def get_buckling_curve_weak(chosen_section_family, chosen_section):
-    if chosen_section_family == "L equal":
-        index = L_equal_name.index(chosen_section)
-        return L_equal_curve[index]
-    elif chosen_section_family == "HEA":
-        index = HEA_name.index(chosen_section)
-        return HEA_curve_weak[index]
+    return total_section_dict[chosen_section_family]["section buckling curve strong"][
+        total_section_dict[chosen_section_family]["section name"].index(chosen_section)]
 
 def get_Ncr (E, I, L):
     Ncr = ((math.pi**2)*E*I)/(L**2)

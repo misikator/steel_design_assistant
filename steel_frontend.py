@@ -41,6 +41,10 @@ unsafe_allow_html=True
 
 chosen_language = st.sidebar.selectbox(label = "Choose a language", options = steel_backend.language_list)
 
+st.title("Steel Design Assistant")
+
+
+
 tab1, tab2, tab3, tab4 = st.tabs([str(steel_backend.set_language()[chosen_language][0]), "B", "C", "D"])
 
 with tab1:
@@ -52,15 +56,21 @@ with tab1:
                                                           options = steel_backend.steel_grade_list)
             chosen_fy = steel_backend.steel_grade_dict[chosen_steel_grade][0]
 
-            chosen_section_family = st.selectbox(label = str(steel_backend.set_language()[chosen_language][7]), options = steel_backend.section_family_list)
+            chosen_section_family = st.selectbox(label = str(steel_backend.set_language()[chosen_language][7]),
+                                                 options = list(steel_backend.total_section_dict.keys()))
 
-            if chosen_section_family == "L equal":
-                chosen_section_list = steel_backend.L_equal_name
-            elif chosen_section_family == "HEA":
-                chosen_section_list = steel_backend.HEA_name
+            chosen_section_list = steel_backend.total_section_dict[chosen_section_family]["section name"]
+
+            # if chosen_section_family == "L equal":
+            #     chosen_section_list = steel_backend.L_equal_name
+            # elif chosen_section_family == "HEA":
+            #     chosen_section_list = steel_backend.HEA_name
+            # elif chosen_section_family == "HEB":
+            #     chosen_section_list = steel_backend.HEB_name
 
             chosen_section = st.selectbox(label = str(steel_backend.set_language()[chosen_language][2]),
                                           options = chosen_section_list)
+
             chosen_element_length = st.number_input(label = str(steel_backend.set_language()[chosen_language][3]),
                                                     min_value = 0, step = 1, value = 1000)
     with col2:
@@ -68,6 +78,8 @@ with tab1:
             st.image(image = steel_backend.L_equal_image, use_container_width=True)
         elif chosen_section_family == "HEA":
             st.image(image=steel_backend.HEA_image, use_container_width=True)
+        elif chosen_section_family == "HEB":
+            st.image(image=steel_backend.HEB_image, use_container_width=True)
 
     with st.container(border=2):
         col1, col2, col3, col4, col5 = st.columns(5, gap = "small")
@@ -114,12 +126,12 @@ with tab1:
             st.latex(r"""\thickspace""")
         with col3:
 
-            chosen_h = steel_backend.get_h(chosen_section_family = chosen_section_family, chosen_section = chosen_section)
-            st.latex(str(chosen_h) + r"""\thickspace mm""")
-
             chosen_b = steel_backend.get_b(chosen_section_family = chosen_section_family, chosen_section = chosen_section)
-
             st.latex(str(chosen_b) + r"""\thickspace mm""")
+
+            chosen_h = steel_backend.get_h(chosen_section_family = chosen_section_family, chosen_section = chosen_section)
+
+            st.latex(str(chosen_h) + r"""\thickspace mm""")
 
             chosen_tw = steel_backend.get_tw(chosen_section_family=chosen_section_family, chosen_section=chosen_section)
 
@@ -214,11 +226,11 @@ with tab1:
             st.latex(r"""N_{cr, v} \thickspace =""")
 
         with col3:
-            st.latex(r""" \frac{\pi^2 \thinspace \sdot \thinspace E \thinspace \sdot \thinspace I_{v}}{ L_{0}^2} \thinspace =""")
+            st.latex(r""" \frac{\pi^2 \thinspace \sdot \thinspace E \thinspace \sdot \thinspace I_{v}}{ L_{0,z}^2} \thinspace =""")
         with col4:
             st.write("")
             Ncr_v = steel_backend.get_Ncr(E = 210000, I = chosen_inertia_weak * 10000,
-                                      L = chosen_element_length * ky)
+                                      L = chosen_element_length * kz)
             st.latex(str(round(Ncr_v/1000,2)) + r"""\thickspace kN""")
 
         col1, col2, col3, col4, col5 = st.columns(5, gap="small")
@@ -342,11 +354,11 @@ with tab1:
 
         with col3:
             st.latex(
-                r""" \frac{\pi^2 \thinspace \sdot \thinspace E \thinspace \sdot \thinspace I_{u}}{ L_{0}^2} \thinspace =""")
+                r""" \frac{\pi^2 \thinspace \sdot \thinspace E \thinspace \sdot \thinspace I_{u}}{ L_{0,y}^2} \thinspace =""")
         with col4:
             st.write("")
             Ncr_u = steel_backend.get_Ncr(E=210000, I=chosen_inertia_strong * 10000,
-                                          L=chosen_element_length * kz)
+                                          L=chosen_element_length * ky)
             st.latex(str(round(Ncr_u / 1000, 2)) + r"""\thickspace kN""")
 
         col1, col2, col3, col4, col5 = st.columns(5, gap="small")
