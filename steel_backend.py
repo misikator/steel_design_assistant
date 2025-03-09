@@ -177,7 +177,68 @@ IPE_dict = {"section name" : IPE_name,
             "section buckling curve weak": IPE_curve_weak,
             "section buckling curve strong": IPE_curve_strong}
 
-total_section_dict = {"L equal": L_equal_dict, "HEA": HEA_dict, "HEB": HEB_dict, "IPE": IPE_dict}
+df_SHS_hot = pd.read_excel("section_table_SHS_hot.xlsx", engine="openpyxl")
+
+SHS_hot_name = df_SHS_hot.iloc[:, 0].tolist()
+SHS_hot_h = df_SHS_hot.iloc[:, 1].tolist()
+SHS_hot_t = df_SHS_hot.iloc[:, 2].tolist()
+SHS_hot_r0 = df_SHS_hot.iloc[:, 3].tolist()
+SHS_hot_ri = df_SHS_hot.iloc[:, 4].tolist()
+SHS_hot_area = df_SHS_hot.iloc[:, 6].tolist()
+SHS_hot_inertia = df_SHS_hot.iloc[:, 7].tolist()
+SHS_hot_inertia_strong = df_SHS_hot.iloc[:, 7].tolist()
+SHS_hot_inertia_weak = df_SHS_hot.iloc[:, 7].tolist()
+
+
+SHS_hot_curve = []
+for element in enumerate(SHS_hot_name):
+    SHS_hot_curve.append("a")
+
+
+
+SHS_hot_dict = {"section name" : SHS_hot_name,
+                "section height" : SHS_hot_h,
+                "section width" : SHS_hot_h,
+                "section web" : SHS_hot_t,
+                "section flange" : SHS_hot_t,
+                "section area" : SHS_hot_area,
+                "section inertia weak" : SHS_hot_inertia_weak,
+                "section inertia strong" : SHS_hot_inertia_strong,
+                "section buckling curve weak": SHS_hot_curve,
+                "section buckling curve strong": SHS_hot_curve}
+
+df_SHS_cold = pd.read_excel("section_table_SHS_cold.xlsx", engine="openpyxl")
+
+SHS_cold_name = df_SHS_cold.iloc[:, 0].tolist()
+SHS_cold_h = df_SHS_cold.iloc[:, 1].tolist()
+SHS_cold_t = df_SHS_cold.iloc[:, 2].tolist()
+SHS_cold_r0 = df_SHS_cold.iloc[:, 3].tolist()
+SHS_cold_ri = df_SHS_cold.iloc[:, 4].tolist()
+SHS_cold_area = df_SHS_cold.iloc[:, 6].tolist()
+SHS_cold_inertia = df_SHS_cold.iloc[:, 7].tolist()
+SHS_cold_inertia_strong = df_SHS_cold.iloc[:, 7].tolist()
+SHS_cold_inertia_weak = df_SHS_cold.iloc[:, 7].tolist()
+
+
+SHS_cold_curve = []
+for element in enumerate(SHS_cold_name):
+    SHS_cold_curve.append("c")
+
+
+
+SHS_cold_dict = {"section name" : SHS_cold_name,
+                "section height" : SHS_cold_h,
+                "section width" : SHS_cold_h,
+                "section web" : SHS_cold_t,
+                "section flange" : SHS_cold_t,
+                "section area" : SHS_cold_area,
+                "section inertia weak" : SHS_cold_inertia_weak,
+                "section inertia strong" : SHS_cold_inertia_strong,
+                "section buckling curve weak": SHS_cold_curve,
+                "section buckling curve strong": SHS_cold_curve}
+
+total_section_dict = {"L equal": L_equal_dict, "HEA": HEA_dict, "HEB": HEB_dict, "IPE": IPE_dict,
+                      "SHS hot": SHS_hot_dict, "SHS cold": SHS_cold_dict}
 
 
 
@@ -189,10 +250,15 @@ L_equal_image_path = current_dir / "pics" / "L_equal.png"
 HEA_image_path = current_dir / "pics" / "HEA.png"
 HEB_image_path = current_dir / "pics" / "HEB.png"
 IPE_image_path = current_dir / "pics" / "IPE.png"
+SHS_hot_image_path = current_dir / "pics" / "SHS_hot.png"
+SHS_cold_image_path = current_dir / "pics" / "SHS_cold.png"
+
 L_equal_image = Image.open(L_equal_image_path)
 HEA_image = Image.open(HEA_image_path)
 HEB_image = Image.open(HEB_image_path)
 IPE_image = Image.open(IPE_image_path)
+SHS_hot_image = Image.open(SHS_hot_image_path)
+SHS_cold_image = Image.open(SHS_cold_image_path)
 
 steel_grade_dict = {"S235": [235, 360, 7850, 210000, 81000, 0,3, 0.000012],
               "S275": [275, 430, 7850, 210000, 81000, 0,3, 0.000012],

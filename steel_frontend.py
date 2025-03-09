@@ -82,6 +82,10 @@ with tab1:
             st.image(image=steel_backend.HEB_image, use_container_width=True)
         elif chosen_section_family == "IPE":
             st.image(image=steel_backend.IPE_image, use_container_width=True)
+        elif chosen_section_family == "SHS hot":
+            st.image(image=steel_backend.SHS_hot_image, use_container_width=True)
+        elif chosen_section_family == "SHS cold":
+            st.image(image=steel_backend.SHS_cold_image, use_container_width=True)
 
     with st.container(border=2):
         col1, col2, col3, col4, col5 = st.columns(5, gap = "small")
